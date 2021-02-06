@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Images</title>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- UIkit CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.6.16/dist/css/uikit.min.css"/>
+    <!-- UIkit JS -->
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.6.16/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.6.16/dist/js/uikit-icons.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <nav class="uk-navbar-container" uk-navbar>
+        <div>
+            <div class="uk-navbar-left">
+                <ul class="uk-navbar-nav">
+                    <li class="uk-active"><a href="#modal_adding" uk-toggle>Добавить</a></li>
+                </ul>
+            </div>
+
+            <!-- This is the modal -->
+            <div id="modal_adding" uk-modal>
+                <div class="uk-modal-dialog uk-modal-body">
+                    <h2 class="uk-modal-title">Добавление новой картинки</h2>
+                    <p>
+                        Выберете файл
+                    </p>
+                    <div class="js-upload" uk-form-custom>
+                        <input type="file" id="image_file" v-on:change="add($event)" multiple>
+                        <button class="uk-button uk-button-default" type="button" tabindex="-1">Выбрать файл</button>
+                    </div>
+                    <p class="uk-text-right">
+                        <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="uk-padding-large">
+        <div class="uk-inline" v-for="image of images" :key="image.id">
+            <img class="uk-margin-left uk-margin-bottom" :data-src="image.src" width="300" height="200" alt="" uk-img>
+            <span class="uk-position-center" style="z-index: 10; color: red; cursor: pointer; border-radius: 3px; background: rgba(200,200,200,0.8); padding: 10px" uk-icon="trash" @click="remove(image.name)"></span>
+        </div>
+    </div>
+</div>
+<script>
+    const App = {
+        data() {
+            return {
+                file: null,
+                images: []
+            }
+        },
+        methods: {
+            getAll() {
+                axios.get('get',
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }
+                ).then((data) => {
+                    this.images = data.data.map((item, i) => {
+                        return {id: i, src: './images/' + item, name: item};
+                    })
+                    console.log(this.images);
+                })
+                    .catch(function () {
+                        console.log('FAILURE!!');
+                    });
+            },
+            add(event) {
+                let file = event.target.files[0];
+                let formData = new FormData();
+                formData.append('file', file);
+                axios.post(file.name,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }
+                ).then( (data) => {
+                    UIkit.modal(document.getElementById('modal_adding')).hide();
+                    this.getAll();
+                })
+                    .catch(function () {
+                        console.log('FAILURE!!');
+                    });
+            },
+            remove(name) {
+                axios.post('remove',
+                    {name},
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }
+                ).then( (data) => {
+                    this.getAll();
+                    console.log(data);
+                })
+                    .catch(function () {
+                        console.log('FAILURE!!');
+                    });
+            }
+        },
+        mounted(){
+            this.getAll();
+        }
+    }
+    Vue.createApp(App).mount('#app')
+</script>
+</body>
+</html>
