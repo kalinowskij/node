@@ -21,12 +21,11 @@ http.createServer(function onRequest(request, response) {
             fs.readdir('./images', function (err, files) {
                 //handling error
                 if (err) {
-                    return console.log('Unable to scan directory: ' + err);
+                    // error
                 }
                 //listing all files using forEach
                 files.forEach(function (file) {
                     // Do whatever you want to do with the file
-                    console.log(file);
                 });
                 response.writeHead(200, {
                     'Content-Type': 'text/html'
@@ -49,8 +48,7 @@ http.createServer(function onRequest(request, response) {
         } else {
             fs.readFile(pathname, 'utf8', function (err, data) {
                 if (err) {
-                    console.log('Could not find or open file ' +
-                        pathname + ' for reading\n');
+                    // Error
                 } else {
                     response.writeHead(200, {'Content-Type': mimeType});
                     response.end(data);
@@ -72,7 +70,7 @@ http.createServer(function onRequest(request, response) {
                     const name = JSON.parse(strData).name;
                     fs.unlink('./images/' + name, (err) => {
                         if (err) {
-                            console.error(err)
+                            // Error
                             return
                         }
                         response.writeHead(200);
@@ -98,7 +96,6 @@ http.createServer(function onRequest(request, response) {
             request.on('end', function() {
 
                 var note = querystring.parse(body, '\r\n', ':')
-                console.log(note)
 
                 //making sure than an image was submitted
                 if (note['Content-Type'].indexOf("image") !== -1)
@@ -111,7 +108,6 @@ http.createServer(function onRequest(request, response) {
 
                             if (fileName.indexOf('\\') !== -1)
                                 fileName = fileName.substring(fileName.lastIndexOf('\\')+1);
-                            console.log("My filename: " + fileName);
                         }
                     }
 
