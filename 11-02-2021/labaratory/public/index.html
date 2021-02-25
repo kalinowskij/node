@@ -26,6 +26,7 @@
 <body>
 <div id="app">
     <div style="text-align: center">Game status: {{game.status}}</div>
+    <div v-if="game.player" style="text-align: center">I am : {{game.player.playerType}}</div>
     <div class="field">
         <div class="column" v-for="(cell, index) of game.data" @click="step(index)">
             <span v-if="cell === 1">x</span>
