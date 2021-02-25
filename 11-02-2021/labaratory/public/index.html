@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Крестики-нолики</title>
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        .field{
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+        }
+        .column {
+            border: black solid 1px;
+            padding-top: 6px;
+            padding-left: 35px;
+            font-size: 4em;
+            cursor: pointer;
+        }
+        .column:hover {
+            background: #DDDDDD;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div style="text-align: center">Game status: {{game.status}}</div>
+    <div class="field">
+        <div class="column" v-for="(cell, index) of game.data" @click="step(index)">
+            <span v-if="cell === 1">x</span>
+            <span v-if="cell === 2">o</span>
+        </div>
+    </div>
+</div>
+<script>
+    const App = {
+        data() {
+            return {
+                socket: null,
+                game: {
+                    id: 1,
+                    status: 'loading...',
+                    data: [],
+                    players: [],
+                    player: null,
+                },
+            }
+        },
+        methods: {
+            step(index){
+                if(this.game.status === 'finish'){
+                    alert("Игра закончена! Начните новую")
+                    return;
+                }
+                if(this.game.player.playerType !== this.game.move){
+                    alert("Не Ваш ход")
+                    return
+                }
+                this.game.data[index] = this.game.player.playerType;
+                this.socket.emit('step', { game: this.game });
+            }
+        },
+        mounted() {
+            this.socket = io.connect('http://localhost:8080');
+            this.socket.on('give_game', (data) => {
+                this.game = data.game
+                if(this.game.status === 'finish'){
+                    alert("Игра закончена! Начните новую")
+                    return;
+                }
+            });
+        }
+    }
+
+    Vue.createApp(App).mount('#app')
+</script>
+</body>
+</html>
